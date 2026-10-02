@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07131a" />
+  <title>AquaGraph — Water Network GCN Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="aurora aurora-a"></div><div class="aurora aurora-b"></div><div class="aurora aurora-c"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="AquaGraph home">
+      <span class="brand-mark"><span></span><span></span><span></span></span>
+      <span><strong>AquaGraph</strong><small>Graph Intelligence Lab</small></span>
+    </a>
+    <nav>
+      <a href="#network">Network</a><a href="#model">Model</a><a href="#inspector">Inspector</a>
+    </nav>
+    <div class="top-actions"><span class="online"><i></i> API CONNECTED</span><button id="liveBtn" class="icon-btn">◉ Live</button></div>
+  </header>
+
+  <main id="top" class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">VANILLA GRAPH CONVOLUTIONAL NETWORK · WATER SAFETY</div>
+        <h1>See the leak <em>move</em> through the graph.</h1>
+        <p>Explore a water-distribution network as a graph. Pressure, flow and sensor signals enter two GCN layers, spread through neighboring junctions, and become an interpretable leak-risk ranking.</p>
+        <div class="hero-actions"><button id="heroRun" class="main-btn">Run a new inference <span>↗</span></button><button id="tourBtn" class="soft-btn">How the GCN works <span>⌁</span></button></div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="orbit orbit-1"></div><div class="orbit orbit-2"></div>
+        <div class="core"><span>GCN</span><b>2</b><small>layers</small></div>
+        <div class="float-node n1">P</div><div class="float-node n2">Q</div><div class="float-node n3">F</div><div class="float-node n4">A</div>
+        <div class="signal s1"></div><div class="signal s2"></div><div class="signal s3"></div>
+      </div>
+    </section>
+
+    <section class="kpi-row">
+      <article class="kpi"><span>Top-1 localization</span><strong id="top1">—</strong><small>true leak ranked first</small></article>
+      <article class="kpi"><span>Top-3 localization</span><strong id="top3">—</strong><small>true leak in three suspects</small></article>
+      <article class="kpi"><span>Node F1</span><strong id="f1">—</strong><small>leak vs normal</small></article>
+      <article class="kpi"><span>Graph scale</span><strong>34 <i>nodes</i></strong><small id="edgeCount">— pipes</small></article>
+    </section>
+
+    <section id="network" class="section-block">
+      <div class="section-heading"><div><span class="eyebrow">01 · LIVE GRAPH</span><h2>Network command center</h2></div><p>Drag the view, scroll to zoom, click any junction, then watch its 1-hop neighborhood light up.</p></div>
+      <div class="command-grid">
+        <div class="panel graph-panel">
+          <div class="toolbar">
+            <div class="toolbar-left"><span class="label">SNAPSHOT</span><select id="snapshotSelect"></select><button id="runBtn" class="small-btn">Run GCN</button></div>
+            <div class="toolbar-right"><button id="resetView" class="small-btn ghost">Reset view</button><button id="focusNeighbors" class="small-btn ghost">1-hop focus</button></div>
+          </div>
+          <div class="graph-stage" id="graphStage">
+            <svg id="graph" viewBox="0 0 900 620" aria-label="interactive water network graph"></svg>
+            <div class="graph-hud"><div><span class="hud-dot low"></span>Low</div><div><span class="hud-dot mid"></span>Watch</div><div><span class="hud-dot high"></span>High</div><div class="hud-tip">scroll = zoom · drag = move · click = inspect · all 34 nodes visible</div></div>
+            <div id="nodeTooltip" class="node-tooltip"></div>
+            <div id="inferenceGlow" class="inference-glow"><span></span> message passing complete</div>
+          </div>
+          <div class="graph-footer"><div><small>GROUND TRUTH</small><b id="truthBadge">—</b></div><div><small>SELECTED NODE</small><b id="selectedMini">None</b></div><div><small>MODEL</small><b>2-layer Vanilla GCN</b></div><div><small>STATUS</small><b class="good-text">Ready</b></div></div>
+        </div>
+
+        <aside class="panel suspects-panel">
+          <div class="panel-title"><div><span class="eyebrow">RISK RANKING</span><h3>Top leak suspects</h3></div><span class="live-dot"></span></div>
+          <div id="suspectList" class="suspect-list"></div>
+          <div class="ranking-note"><div class="note-icon">↯</div><div><strong>Why topology helps</strong><p>Every node receives its own sensor vector plus context aggregated from connected neighbors.</p></div></div>
+          <button id="inspectBest" class="wide-btn">Inspect highest-risk node <span>→</span></button>
+        </aside>
+      </div>
+    </section>
+
+    <section id="model" class="section-block">
+      <div class="section-heading"><div><span class="eyebrow">02 · MODEL LAB</span><h2>Two graph-convolution layers</h2></div><p>This panel makes the vanilla architecture visible instead of hiding the GCN inside a black box.</p></div>
+      <div class="model-grid">
+        <article class="panel model-card input-card"><span class="step">INPUT</span><div class="big-number">09</div><h3>Node features</h3><p>Pressure · demand · flow · acoustic · vibration · elevation · degree</p><div class="chips"><span>H⁽⁰⁾</span><span>34 × 9</span></div></article>
+        <div class="connector"><span>Ā</span><i>aggregate</i></div>
+        <article class="panel model-card layer-card active"><div class="layer-top"><span class="step">LAYER 1</span><span class="layer-chip">GCN</span></div><div class="layer-shape"><b>9 → 36</b><span>weights W¹</span></div><div class="mini-bars" id="layer1Bars"></div><h3>Neighborhood encoding</h3><p>Each junction mixes graph context, then ReLU keeps useful signals.</p><div class="chips"><span>H⁽¹⁾</span><span>34 × 36</span></div></article>
+        <div class="connector"><span>Ā</span><i>propagate</i></div>
+        <article class="panel model-card layer-card second"><div class="layer-top"><span class="step">LAYER 2</span><span class="layer-chip purple">GCN</span></div><div class="layer-shape"><b>36 → 2</b><span>weights W²</span></div><div class="output-orb"><span>0</span><span>1</span><b id="layer2Output">—</b></div><h3>Leak classification</h3><p>The final graph-aware representation becomes normal vs leak logits.</p><div class="chips"><span>H⁽²⁾</span><span>34 × 2</span></div></article>
+        <div class="connector"><span>↗</span><i>softmax</i></div>
+        <article class="panel model-card output-card"><span class="step">OUTPUT</span><div class="prob-ring" id="probRing"><b id="selectedRiskLarge">—</b><small>risk</small></div><h3 id="selectedTitle">Select a node</h3><p>Tap the network or a suspect to inspect the complete signal path.</p><div class="chips"><span>Leak / Normal</span></div></article>
+      </div>
+      <div class="equation panel"><div><span class="eyebrow">VANILLA GCN EQUATION</span><p>Each layer applies the same normalized graph propagation pattern.</p></div><code>H<sup>(l+1)</sup> = σ(D̂<sup>−1/2</sup>ÂD̂<sup>−1/2</sup>H<sup>(l)</sup>W<sup>(l)</sup>)</code></div>
+    </section>
+
+    <section id="inspector" class="section-block">
+      <div class="section-heading"><div><span class="eyebrow">03 · NODE INSPECTOR</span><h2 id="inspectorTitle">Select a node to inspect</h2></div><p>The selected node is shown together with its sensor profile, one-hop neighbors and Layer 1 activations.</p></div>
+      <div class="inspector-grid">
+        <article class="panel profile-panel"><div class="profile-head"><div class="node-avatar" id="nodeAvatar">?</div><div><span class="eyebrow">JUNCTION</span><h3 id="profileNode">No node selected</h3><p id="profileStatus">Choose a node on the graph.</p></div><div class="profile-score"><small>LEAK RISK</small><b id="profileRisk">—</b></div></div><div class="signal-grid" id="detailGrid"><div class="empty">Your selected node’s sensor values will appear here.</div></div></article>
+        <aside class="panel activation-panel"><div class="panel-title"><div><span class="eyebrow">LAYER 1</span><h3>Hidden activations</h3></div><span id="activeUnits" class="count-chip">—</span></div><p class="activation-copy">A small window into the 36-dimensional hidden representation created by GCN Layer 1.</p><div class="activation-bars" id="activationBars"></div><div class="neighbor-wrap"><span class="eyebrow">1-HOP NEIGHBORS</span><div id="neighborList" class="neighbor-list"></div></div></aside>
+      </div>
+    </section>
+
+    <section class="foot-grid">
+      <article class="panel foot-card"><span class="eyebrow">DATASET</span><strong>1,200 snapshots</strong><p>34 nodes · 54 pipe edges · 9 node features · deterministic seed.</p></article>
+      <article class="panel foot-card"><span class="eyebrow">TRAINING</span><strong id="trainingLine">Vanilla GCN</strong><p>PyTorch implementation with explicit GCN Layer 1 and GCN Layer 2.</p></article>
+      <article class="panel foot-card"><span class="eyebrow">PUBLIC-DATA READY</span><strong>EPANET / LeakDB path</strong><p>The graph interface can be fed benchmark water-network scenarios later.</p></article>
+    </section>
+  </main>
+
+  <div id="tourModal" class="modal-backdrop"><div class="modal panel"><button id="closeTour" class="close">×</button><span class="eyebrow">HOW MESSAGE PASSING WORKS</span><h2>One node does not reason alone.</h2><div class="tour-steps"><div><b>01</b><strong>Read local sensors</strong><span>Pressure, flow, acoustic and vibration become the node feature vector.</span></div><div><b>02</b><strong>Layer 1 aggregates neighbors</strong><span>The normalized adjacency mixes each node with nearby junction context.</span></div><div><b>03</b><strong>Layer 2 classifies</strong><span>The second GCN turns the 36-dimensional hidden state into two output scores.</span></div></div></div></div>
+  <div id="toast" class="toast">Inference complete</div>
+  <script src="app.js"></script>
+</body>
+</html>

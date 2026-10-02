@@ -1,0 +1,25 @@
+{
+  "title": "AquaGraph \u2014 Smart Water Network Leak Localization Dataset",
+  "description": "A compact, reproducible physics-inspired dataset generated on a 34-node urban water graph. It is intended for a runnable academic GCN demo; public benchmark links are included in README.",
+  "num_nodes": 34,
+  "num_edges": 54,
+  "num_snapshots": 1200,
+  "positive_snapshots": 888,
+  "features": [
+    "pressure_m",
+    "demand_lps",
+    "flow_in_lps",
+    "flow_out_lps",
+    "pressure_gradient",
+    "acoustic_index",
+    "vibration_index",
+    "elevation_m",
+    "degree"
+  ],
+  "random_seed": 42,
+  "public_benchmarks": [
+    "LeakDB",
+    "LeakG3PD",
+    "Zenodo WDN network operation state snapshots (L-Town/C-Town/etc.)"
+  ]
+}
